@@ -230,6 +230,7 @@
     gap: 0.5rem;
     margin-bottom: 1.1rem;
   }
+  .known-users[hidden] { display: none; }
 
   .known-users-empty {
     font-size: 0.82rem;
@@ -248,6 +249,12 @@
     cursor: pointer;
   }
   .user-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  .user-chip.active {
+    border-color: var(--accent);
+    color: var(--accent-contrast);
+    background: var(--accent);
+  }
 
   .chip-smoker-mark { color: var(--highlight); }
 
@@ -535,6 +542,7 @@
   }
 
   .field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .field[hidden] { display: none; }
   .field.name-field { flex: 1 1 130px; }
 
   .field label {
@@ -641,6 +649,7 @@
     cursor: pointer;
     user-select: none;
   }
+  .smoker-chip[hidden] { display: none; }
 
   .smoker-chip input {
     width: 1rem;
@@ -1014,7 +1023,7 @@
     <div>
       <h1 class="display">قطة العتش</h1>
       <p class="lede">هذا التطبيق لتسجيل الأغراض المطلوبة لطلعات العتش، ولحساب القطة الكلية، ثم تسويتها بين الأعضاء.</p>
-      <p class="session-note" id="sessionNote" hidden>مسجّل الدخول باسم <strong id="sessionUserName"></strong></p>
+      <p class="session-note" id="sessionNote" hidden>مسجّل الدخول باسم <strong id="sessionUserName"></strong> · <button type="button" class="btn-text" id="logoutBtn">تسجيل خروج</button></p>
     </div>
     <div class="stamp" id="ticketSerial"></div>
   </header>
@@ -1034,23 +1043,39 @@
     <div class="ticket-body">
       <p class="section-title">تسجيل الدخول</p>
       <h2 class="intro-question display">من يبدأ هذه الرحلة؟</h2>
-      <p class="lede" style="margin-bottom:1.1rem">اختاروا اسم مستخدم مسجّل على هذا الجهاز، أو سجّلوا اسمًا جديدًا لتبدأوا باسمه.</p>
+      <p class="lede" style="margin-bottom:1.1rem">سجّلوا الدخول ببريدكم وكلمة المرور من أي جهاز، أو أنشئوا حسابًا جديدًا للمرة الأولى.</p>
 
-      <div class="known-users" id="knownUsersList"></div>
+      <div class="known-users" id="savedSessionRow" hidden>
+        <button type="button" class="user-chip" id="continueSessionBtn"></button>
+        <button type="button" class="btn-text" id="forgetSessionBtn">هذا ليس أنا</button>
+      </div>
 
-      <div class="login-form">
-        <div class="field">
-          <label>اسم مستخدم جديد</label>
-          <input type="text" id="newUsernameInput" placeholder="مثال: سالم">
+      <div class="known-users" id="authTabs">
+        <button type="button" class="user-chip active" id="tabLoginBtn" data-mode="login">دخول</button>
+        <button type="button" class="user-chip" id="tabSignupBtn" data-mode="signup">حساب جديد</button>
+      </div>
+
+      <form class="login-form" id="authForm">
+        <div class="field name-field" id="authNameField" hidden>
+          <label>الاسم</label>
+          <input type="text" id="authNameInput" placeholder="مثال: سالم">
         </div>
-        <label class="smoker-chip" id="newUserSmokerChip">
-          <input type="checkbox" id="newUserSmoker">
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="authEmailInput" placeholder="name@example.com" autocomplete="username">
+        </div>
+        <div class="field">
+          <label>كلمة المرور</label>
+          <input type="password" id="authPasswordInput" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <label class="smoker-chip" id="authSmokerChip" hidden>
+          <input type="checkbox" id="authSmokerInput">
           <span>يدخّن الشيشة</span>
         </label>
-        <button type="button" class="btn btn-primary" id="registerBtn">تسجيل ودخول</button>
-      </div>
+        <button type="submit" class="btn btn-primary" id="authSubmitBtn">دخول</button>
+      </form>
       <p class="error-msg" id="loginError" role="alert"></p>
-      <p class="fine-note">التسجيل محلي على هذا الجهاز فقط وبلا كلمة مرور — ليس حسابًا عبر الإنترنت، ولا يظهر لأصحاب الأجهزة الأخرى.</p>
+      <p class="fine-note" id="authFineNote">يُحفظ تسجيل الدخول على هذا الجهاز لتخطي كتابة كلمة المرور لاحقًا فقط، دون ضمان أمني إضافي. البيانات تُرسل إلى خادم عبر الإنترنت وليست محلية بحتة.</p>
     </div>
   </div>
 
@@ -1151,11 +1176,14 @@
     </div>
   </section>
 
-  <footer>الحسابات وأسماء المستخدمين المسجّلة تُحفظ بالكامل في متصفحك — لا تُرسل أي بيانات لأي خادم.</footer>
+  <footer>حسابات الرحلة ومصاريفها تُحفظ بالكامل في متصفحك ولا تُرسل لأي خادم — فقط تسجيل الدخول (البريد وكلمة المرور) يمرّ عبر خادم صغير للتحقق منه.</footer>
 </div>
 
 <script>
 (function () {
+  // ⚠️ ضعوا هنا رابط خادم تسجيل الدخول بعد إنشائه على Render (خطوة يدوية لمرة واحدة، انظروا server/README).
+  const API_BASE = 'https://REPLACE-ME.onrender.com';
+
   const listEl = document.getElementById('accountsList');
   const countEl = document.getElementById('participantCount');
   const addAccountBtn = document.getElementById('addAccountBtn');
@@ -1168,15 +1196,24 @@
   const mainCard = document.getElementById('mainCard');
   const startTripBtn = document.getElementById('startTripBtn');
   const loginCard = document.getElementById('loginCard');
-  const knownUsersList = document.getElementById('knownUsersList');
-  const newUsernameInput = document.getElementById('newUsernameInput');
-  const newUserSmoker = document.getElementById('newUserSmoker');
-  const newUserSmokerChip = document.getElementById('newUserSmokerChip');
-  const registerBtn = document.getElementById('registerBtn');
+  const savedSessionRow = document.getElementById('savedSessionRow');
+  const continueSessionBtn = document.getElementById('continueSessionBtn');
+  const forgetSessionBtn = document.getElementById('forgetSessionBtn');
+  const authTabs = document.getElementById('authTabs');
+  const tabLoginBtn = document.getElementById('tabLoginBtn');
+  const authForm = document.getElementById('authForm');
+  const authNameField = document.getElementById('authNameField');
+  const authNameInput = document.getElementById('authNameInput');
+  const authEmailInput = document.getElementById('authEmailInput');
+  const authPasswordInput = document.getElementById('authPasswordInput');
+  const authSmokerChip = document.getElementById('authSmokerChip');
+  const authSmokerInput = document.getElementById('authSmokerInput');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
   const loginError = document.getElementById('loginError');
   const usersDatalist = document.getElementById('knownUsersDatalist');
   const sessionNote = document.getElementById('sessionNote');
   const sessionUserName = document.getElementById('sessionUserName');
+  const logoutBtn = document.getElementById('logoutBtn');
   const needsCard = document.getElementById('needsCard');
   const needItemCountEl = document.getElementById('needItemCount');
   const quickSuggestions = document.getElementById('quickSuggestions');
@@ -1196,7 +1233,42 @@
   let currentUser = null;
   let currentUserSmoker = false;
 
-  // ---- Local username "directory" (this device only, no password, no server) ----
+  // ---- Real account session (البريد وكلمة المرور، عبر الخادم — هذا هو تسجيل الدخول الفعلي) ----
+  const SESSION_KEY = 'tripLedgerSession'; // { token, email, name, smoker }
+
+  function loadSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; }
+  }
+  function saveSession(session) {
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (e) { /* storage unavailable */ }
+  }
+  function clearSession() {
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
+  }
+
+  async function apiRequest(path, options) {
+    options = options || {};
+    const res = await fetch(API_BASE + path, {
+      method: options.method || 'GET',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers || {}),
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* no body */ }
+    if (!res.ok) throw new Error((data && data.error) || 'حدث خطأ غير متوقع');
+    return data;
+  }
+
+  function setAuthBusy(busy) {
+    const isSignup = authTabs.querySelector('.user-chip.active').dataset.mode === 'signup';
+    authSubmitBtn.disabled = busy;
+    authSubmitBtn.textContent = busy
+      ? 'جارٍ الاتصال بالخادم… (قد يستغرق حتى دقيقة عند أول استخدام)'
+      : (isSignup ? 'إنشاء الحساب' : 'دخول');
+  }
+
+  // ---- Local "known names" directory — مجرد اقتراح تلقائي لأسماء المشاركين عند تسجيل المصاريف
+  //      (autocomplete)، ولا علاقة له بتسجيل الدخول أعلاه — هذا الجهاز فقط، بلا كلمة مرور ولا خادم ----
   const USERS_KEY = 'tripLedgerUsers';
 
   function loadUsers() {
@@ -1230,11 +1302,10 @@
   }
 
   function refreshUserUI() {
+    // يحدّث فقط قائمة الاقتراح التلقائي (autocomplete) لأسماء المشاركين عند تسجيل المصاريف —
+    // لا علاقة له بتسجيل الدخول (ذاك عبر البريد وكلمة المرور، انظروا showLogin/authForm أعلاه).
     const users = loadUsers();
     usersDatalist.innerHTML = users.map(u => `<option value="${escapeHtml(u.name)}"></option>`).join('');
-    knownUsersList.innerHTML = users.length
-      ? users.map(u => `<button type="button" class="user-chip" data-username="${escapeHtml(u.name)}" data-smoker="${u.smoker ? 1 : 0}">${escapeHtml(u.name)}${u.smoker ? ' <span class="chip-smoker-mark">· مدخّن</span>' : ''}</button>`).join('')
-      : '<p class="known-users-empty">لا يوجد مستخدمون مسجّلون على هذا الجهاز بعد — سجّلوا أول اسم أدناه.</p>';
   }
 
   const fmt = (n) => (Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1684,16 +1755,39 @@
     startTripBtn.focus();
   }
 
-  function showLogin() {
+  async function showLogin() {
     introCard.hidden = true;
     loginError.textContent = '';
-    newUsernameInput.value = '';
-    newUserSmoker.checked = false;
-    newUserSmokerChip.classList.remove('active');
-    refreshUserUI();
+    authForm.reset();
+    authNameField.hidden = true;
+    authSmokerChip.hidden = true;
+    authSmokerChip.classList.remove('active');
+    authTabs.querySelectorAll('.user-chip').forEach(b => b.classList.toggle('active', b === tabLoginBtn));
+    authSubmitBtn.textContent = 'دخول';
+    authPasswordInput.autocomplete = 'current-password';
+    refreshUserUI(); // دليل الأسماء المحلي (autocomplete)، غير مرتبط بتسجيل الدخول
     loginCard.hidden = false;
+
+    const session = loadSession();
+    if (session) {
+      savedSessionRow.hidden = false;
+      continueSessionBtn.textContent = `متابعة كـ ${session.name}`;
+      continueSessionBtn.disabled = true;
+      try {
+        const data = await apiRequest('/api/me', { headers: { Authorization: `Bearer ${session.token}` } });
+        continueSessionBtn.textContent = `متابعة كـ ${data.user.name}`;
+        saveSession(Object.assign({ token: session.token }, data.user));
+      } catch (e) {
+        clearSession();
+        savedSessionRow.hidden = true;
+      }
+      continueSessionBtn.disabled = false;
+    } else {
+      savedSessionRow.hidden = true;
+    }
+
     window.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' });
-    newUsernameInput.focus();
+    authEmailInput.focus();
   }
 
   function loginAs(username, smoker) {
@@ -1704,31 +1798,65 @@
 
   startTripBtn.addEventListener('click', showLogin);
 
-  knownUsersList.addEventListener('click', (e) => {
+  authTabs.addEventListener('click', (e) => {
     const btn = e.target.closest('.user-chip');
     if (!btn) return;
-    loginAs(btn.dataset.username, btn.dataset.smoker === '1');
+    authTabs.querySelectorAll('.user-chip').forEach(b => b.classList.toggle('active', b === btn));
+    const isSignup = btn.dataset.mode === 'signup';
+    authNameField.hidden = !isSignup;
+    authSmokerChip.hidden = !isSignup;
+    authSubmitBtn.textContent = isSignup ? 'إنشاء الحساب' : 'دخول';
+    authPasswordInput.autocomplete = isSignup ? 'new-password' : 'current-password';
+    loginError.textContent = '';
   });
 
-  newUserSmoker.addEventListener('change', (e) => {
-    newUserSmokerChip.classList.toggle('active', e.target.checked);
+  authSmokerInput.addEventListener('change', (e) => {
+    authSmokerChip.classList.toggle('active', e.target.checked);
   });
 
-  registerBtn.addEventListener('click', () => {
-    const name = newUsernameInput.value.trim();
-    if (!name) {
-      loginError.textContent = 'اكتبوا اسم مستخدم قبل التسجيل.';
+  continueSessionBtn.addEventListener('click', () => {
+    const session = loadSession();
+    if (session) loginAs(session.name, session.smoker);
+  });
+
+  forgetSessionBtn.addEventListener('click', () => {
+    clearSession();
+    savedSessionRow.hidden = true;
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    clearSession();
+    showIntro();
+  });
+
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const isSignup = authTabs.querySelector('.user-chip.active').dataset.mode === 'signup';
+    const email = authEmailInput.value.trim();
+    const password = authPasswordInput.value;
+    loginError.textContent = '';
+
+    if (!email || !password) {
+      loginError.textContent = 'أدخلوا البريد الإلكتروني وكلمة المرور.';
       return;
     }
-    loginError.textContent = '';
-    const smoker = newUserSmoker.checked;
-    loginAs(registerUser(name, smoker), smoker);
-  });
+    if (isSignup && !authNameInput.value.trim()) {
+      loginError.textContent = 'أدخلوا اسمًا.';
+      return;
+    }
 
-  newUsernameInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      registerBtn.click();
+    setAuthBusy(true);
+    try {
+      const payload = isSignup
+        ? { email, password, name: authNameInput.value.trim(), smoker: authSmokerInput.checked }
+        : { email, password };
+      const data = await apiRequest(isSignup ? '/api/signup' : '/api/login', { method: 'POST', body: payload });
+      saveSession({ token: data.token, email: data.user.email, name: data.user.name, smoker: data.user.smoker });
+      loginAs(data.user.name, data.user.smoker);
+    } catch (err) {
+      loginError.textContent = err.message;
+    } finally {
+      setAuthBusy(false);
     }
   });
 
