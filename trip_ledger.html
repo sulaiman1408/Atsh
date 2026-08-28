@@ -1,8 +1,11 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-lang="ar">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
   <title>قطة العتش</title>
   <style>
   @font-face {
@@ -109,6 +112,10 @@
     direction: rtl;
     max-width: 640px;
     margin: 0 auto;
+  }
+
+  html[data-lang="hi"] .page {
+    direction: ltr;
   }
 
   a { color: var(--accent); }
@@ -1003,6 +1010,58 @@
     .acct-subtotal .label, .acct-subtotal .value { display: inline; }
     .acct-subtotal .value { margin-inline-start: 0.4rem; }
     .masthead { flex-direction: column; align-items: flex-start; }
+    .masthead-side { flex-direction: row; align-self: stretch; justify-content: space-between; }
+  }
+
+  /* ---------- Language switch (Arabic / Hindi) ---------- */
+  .masthead-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .lang-switch {
+    display: inline-flex;
+    gap: 0.3rem;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface-sunken);
+  }
+
+  .lang-switch button {
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+  }
+
+  .lang-switch button:hover { color: var(--ink); }
+
+  .lang-switch button.active {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-weight: 600;
+  }
+
+  .lang-switch button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  html[data-lang="hi"] body {
+    font-family: 'Noto Sans Devanagari', 'Segoe UI', Tahoma, sans-serif;
+    line-height: 1.75;
+  }
+
+  html[data-lang="hi"] .display {
+    font-family: 'Baloo 2', 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1016,84 +1075,85 @@
   <header class="masthead">
     <div>
       <h1 class="display">قطة العتش</h1>
-      <p class="lede">لكل شخص حساب في قطة العتش — سجّلوا كل ما اشتراه، وحدّدوا من يدخّن الشيشة ليشارك في تكلفة المعسل وحده، بالإضافة إلى مشاركة الجميع في التكلفة الكلية.</p>
-      <p class="session-note" id="sessionNote" hidden>مسجّل الدخول باسم <strong id="sessionUserName"></strong></p>
+      <p class="lede" data-i18n="tagline"></p>
+      <p class="session-note" id="sessionNote" hidden><span data-i18n="loggedInAs"></span> <strong id="sessionUserName"></strong></p>
     </div>
-    <div class="stamp" id="ticketSerial"></div>
+    <div class="masthead-side">
+      <div class="lang-switch" id="langSwitch" role="group" aria-label="Language">
+        <button type="button" data-lang="ar">العربية</button>
+        <button type="button" data-lang="hi">हिन्दी</button>
+      </div>
+      <div class="stamp" id="ticketSerial"></div>
+    </div>
   </header>
 
   <div class="ticket" id="introCard">
     <div class="ticket-body">
-      <p class="section-title">رحلة جديدة</p>
-      <h2 class="intro-question display">هل تريد بدء رحلة جديدة؟</h2>
-      <p class="lede" style="margin-bottom:1.4rem">أنشئوا حسابًا لكل مشارك، سجّلوا مشترياته، وستحسب قطة العتش الحصة العادلة وتحدد من يدفع لمن.</p>
+      <p class="section-title" data-i18n="newTripSectionTitle"></p>
+      <h2 class="intro-question display" data-i18n="introQuestion"></h2>
+      <p class="lede" style="margin-bottom:1.4rem" data-i18n="introLede"></p>
       <div class="actions">
-        <button type="button" class="btn btn-primary" id="startTripBtn">نعم، ابدأ رحلة جديدة</button>
+        <button type="button" class="btn btn-primary" id="startTripBtn" data-i18n="startTripBtn"></button>
       </div>
     </div>
   </div>
 
   <div class="ticket" id="loginCard" hidden>
     <div class="ticket-body">
-      <p class="section-title">تسجيل الدخول</p>
-      <h2 class="intro-question display">من يبدأ هذه الرحلة؟</h2>
-      <p class="lede" style="margin-bottom:1.1rem">اختاروا اسم مستخدم مسجّل على هذا الجهاز، أو سجّلوا اسمًا جديدًا لتبدأوا باسمه.</p>
+      <p class="section-title" data-i18n="loginSectionTitle"></p>
+      <h2 class="intro-question display" data-i18n="loginQuestion"></h2>
+      <p class="lede" style="margin-bottom:1.1rem" data-i18n="loginLede"></p>
 
       <div class="known-users" id="knownUsersList"></div>
 
       <div class="login-form">
         <div class="field">
-          <label>اسم مستخدم جديد</label>
-          <input type="text" id="newUsernameInput" placeholder="مثال: سالم">
+          <label data-i18n="newUsernameLabel"></label>
+          <input type="text" id="newUsernameInput" data-i18n-placeholder="newUsernamePlaceholder">
         </div>
         <label class="smoker-chip" id="newUserSmokerChip">
           <input type="checkbox" id="newUserSmoker">
-          <span>يدخّن الشيشة</span>
+          <span data-i18n="smokerChipLabel"></span>
         </label>
-        <button type="button" class="btn btn-primary" id="registerBtn">تسجيل ودخول</button>
+        <button type="button" class="btn btn-primary" id="registerBtn" data-i18n="registerBtn"></button>
       </div>
       <p class="error-msg" id="loginError" role="alert"></p>
-      <p class="fine-note">التسجيل محلي على هذا الجهاز فقط وبلا كلمة مرور — ليس حسابًا عبر الإنترنت، ولا يظهر لأصحاب الأجهزة الأخرى.</p>
+      <p class="fine-note" data-i18n="loginFineNote"></p>
     </div>
   </div>
 
   <div class="ticket" id="needsCard" hidden>
     <div class="ticket-body">
-      <p class="section-title">الأغراض المطلوبة <span class="count" id="needItemCount">0</span></p>
-      <p class="lede" style="margin-bottom:1.1rem">سجّلوا كل ما يجب إحضاره قبل أي حديث عن المبالغ، ثم اسحبوا بطاقة كل غرض إلى عمود الشخص الذي سيتكفّل به — فيعرف الجميع من سيجلب ماذا.</p>
+      <p class="section-title"><span data-i18n="needsSectionTitle"></span> <span class="count" id="needItemCount">0</span></p>
+      <p class="lede" style="margin-bottom:1.1rem" data-i18n="needsLede"></p>
 
-      <div class="quick-suggestions" id="quickSuggestions">
-        <button type="button" class="user-chip suggest-chip" data-item="لحم">+ 🥩 لحم</button>
-        <button type="button" class="user-chip suggest-chip" data-item="رز">+ 🍚 رز</button>
-        <button type="button" class="user-chip suggest-chip" data-item="قهوة">+ ☕ قهوة</button>
-        <button type="button" class="user-chip suggest-chip" data-item="خبز">+ 🍞 خبز</button>
-      </div>
+      <div class="quick-suggestions" id="quickSuggestions"></div>
 
       <div class="need-item-add">
-        <input type="text" id="newNeedItemInput" placeholder="اسم غرض آخر — مثال: فحم">
-        <button type="button" class="btn btn-ghost" id="addNeedItemBtn">+ إضافة</button>
+        <input type="text" id="newNeedItemInput" data-i18n-placeholder="addNeedItemPlaceholder">
+        <button type="button" class="btn btn-ghost" id="addNeedItemBtn" data-i18n="addNeedItemBtn"></button>
       </div>
 
       <div class="kanban-board" id="kanbanBoard">
         <div class="kanban-col kanban-col-unclaimed" id="unclaimedCol">
           <div class="kanban-col-header">
-            <span class="kanban-col-title">غير محجوز</span>
+            <span class="kanban-col-title" data-i18n="unclaimedColumnTitle"></span>
             <span class="kanban-col-count">0</span>
           </div>
           <div class="kanban-col-body" id="unclaimedColBody"></div>
         </div>
         <div class="kanban-col kanban-add-col" id="addLaneCol">
-          <button type="button" class="kanban-add-trigger" id="addLaneTrigger">+ إضافة شخص</button>
+          <button type="button" class="kanban-add-trigger" id="addLaneTrigger" data-i18n="addLaneTrigger"></button>
           <div class="kanban-add-form" id="addLaneForm" hidden>
-            <input type="text" id="newLaneInput" list="knownUsersDatalist" placeholder="اسم الشخص">
-            <button type="button" class="btn btn-ghost" id="confirmAddLaneBtn">إضافة</button>
+            <input type="text" id="newLaneInput" list="knownUsersDatalist" data-i18n-placeholder="newLanePlaceholder">
+            <button type="button" class="btn btn-ghost" id="confirmAddLaneBtn" data-i18n="confirmAddLaneBtn"></button>
           </div>
         </div>
       </div>
 
       <div class="actions">
-        <button type="button" class="btn-text" id="skipNeedsBtn">تخطّي هذه الخطوة</button>
-        <button type="button" class="btn btn-primary" id="continueToExpensesBtn">التالي: تسجيل المصاريف</button>
+        <button type="button" class="btn-text" id="skipNeedsBtn" data-i18n="skipNeedsBtn"></button>
+        <button type="button" class="btn btn-primary" id="continueToExpensesBtn" data-i18n="continueToExpensesBtn"></button>
       </div>
     </div>
   </div>
@@ -1102,13 +1162,13 @@
 
   <div class="ticket" id="mainCard" hidden>
     <div class="ticket-body">
-      <p class="section-title">حسابات المشاركين <span class="count" id="participantCount">2</span></p>
+      <p class="section-title"><span data-i18n="mainSectionTitle"></span> <span class="count" id="participantCount">2</span></p>
 
       <div id="accountsList"></div>
 
       <div class="actions">
-        <button type="button" class="btn btn-ghost" id="addAccountBtn">+ إضافة حساب شخص</button>
-        <button type="button" class="btn btn-primary" id="calcBtn">احسب التسوية</button>
+        <button type="button" class="btn btn-ghost" id="addAccountBtn" data-i18n="addAccountBtn"></button>
+        <button type="button" class="btn btn-primary" id="calcBtn" data-i18n="calcBtn"></button>
       </div>
       <p class="error-msg" id="errorMsg" role="alert"></p>
     </div>
@@ -1117,44 +1177,44 @@
   <section id="results" hidden aria-live="polite">
     <div class="ticket">
       <div class="ticket-body">
-        <p class="section-title">الملخص</p>
+        <p class="section-title" data-i18n="resultsSectionTitle"></p>
         <div class="stat-row">
           <div class="stat">
-            <div class="label">إجمالي المصروف العام</div>
+            <div class="label" data-i18n="totalLabel"></div>
             <div class="value num" id="totalValue">0.00</div>
           </div>
           <div class="stat share">
-            <div class="label">حصة الفرد من المصروف العام</div>
+            <div class="label" data-i18n="shareLabel"></div>
             <div class="value num" id="shareValue">0.00</div>
           </div>
         </div>
 
         <div class="stat-row shisha-row" id="shishaStatRow" hidden>
           <div class="stat">
-            <div class="label">تكلفة المعسل</div>
+            <div class="label" data-i18n="shishaTotalLabel"></div>
             <div class="value num" id="shishaTotalValue">0.00</div>
           </div>
           <div class="stat share">
-            <div class="label">حصة المدخن الواحد</div>
+            <div class="label" data-i18n="shishaShareLabel"></div>
             <div class="value num" id="shishaShareValue">0.00</div>
           </div>
         </div>
-        <p class="shisha-note" id="shishaNote" hidden>يشارك في تكلفة المعسل من دخّن الشيشة فقط.</p>
+        <p class="shisha-note" id="shishaNote" hidden data-i18n="shishaNote"></p>
 
         <div class="balance-list" id="balanceList"></div>
 
-        <p class="section-title" style="margin-bottom:0.25rem">التسوية النهائية</p>
-        <p class="settle-note" id="settleNote">أقل عدد تحويلات ممكن لتصفير الحساب بين الجميع.</p>
+        <p class="section-title" style="margin-bottom:0.25rem" data-i18n="settleSectionTitle"></p>
+        <p class="settle-note" id="settleNote" data-i18n="settleNote"></p>
         <div id="settlementList"></div>
       </div>
     </div>
 
     <div class="actions">
-      <button type="button" class="btn-text" id="resetBtn"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3.6h-3.6"/></svg> بدء رحلة جديدة</button>
+      <button type="button" class="btn-text" id="resetBtn"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3.6h-3.6"/></svg> <span data-i18n="resetBtnLabel"></span></button>
     </div>
   </section>
 
-  <footer>الحسابات وأسماء المستخدمين المسجّلة تُحفظ بالكامل في متصفحك — لا تُرسل أي بيانات لأي خادم.</footer>
+  <footer data-i18n="footerNote"></footer>
 </div>
 
 <script>
@@ -1167,6 +1227,7 @@
   const errorMsg = document.getElementById('errorMsg');
   const results = document.getElementById('results');
   const ticketSerial = document.getElementById('ticketSerial');
+  const langSwitch = document.getElementById('langSwitch');
   const introCard = document.getElementById('introCard');
   const mainCard = document.getElementById('mainCard');
   const startTripBtn = document.getElementById('startTripBtn');
@@ -1198,6 +1259,215 @@
   const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let currentUser = null;
   let currentUserSmoker = false;
+
+
+  // ---- Language (Arabic / Hindi) ----
+  const LANG_KEY = 'tripLedgerLang';
+  const I18N = {
+    ar: {
+      tagline: 'لكل شخص حساب في قطة العتش — سجّلوا كل ما اشتراه، وحدّدوا من يدخّن الشيشة ليشارك في تكلفة المعسل وحده، بالإضافة إلى مشاركة الجميع في التكلفة الكلية.',
+      loggedInAs: 'مسجّل الدخول باسم',
+      newTripSectionTitle: 'رحلة جديدة',
+      introQuestion: 'هل تريد بدء رحلة جديدة؟',
+      introLede: 'أنشئوا حسابًا لكل مشارك، سجّلوا مشترياته، وستحسب قطة العتش الحصة العادلة وتحدد من يدفع لمن.',
+      startTripBtn: 'نعم، ابدأ رحلة جديدة',
+      loginSectionTitle: 'تسجيل الدخول',
+      loginQuestion: 'من يبدأ هذه الرحلة؟',
+      loginLede: 'اختاروا اسم مستخدم مسجّل على هذا الجهاز، أو سجّلوا اسمًا جديدًا لتبدأوا باسمه.',
+      newUsernameLabel: 'اسم مستخدم جديد',
+      newUsernamePlaceholder: 'مثال: سالم',
+      smokerChipLabel: 'يدخّن الشيشة',
+      registerBtn: 'تسجيل ودخول',
+      loginFineNote: 'التسجيل محلي على هذا الجهاز فقط وبلا كلمة مرور — ليس حسابًا عبر الإنترنت، ولا يظهر لأصحاب الأجهزة الأخرى.',
+      loginErrorEmptyName: 'اكتبوا اسم مستخدم قبل التسجيل.',
+      knownUsersEmpty: 'لا يوجد مستخدمون مسجّلون على هذا الجهاز بعد — سجّلوا أول اسم أدناه.',
+      smokerMarkSuffix: ' · مدخّن',
+      needsSectionTitle: 'الأغراض المطلوبة',
+      needsLede: 'سجّلوا كل ما يجب إحضاره قبل أي حديث عن المبالغ، ثم اسحبوا بطاقة كل غرض إلى عمود الشخص الذي سيتكفّل به — فيعرف الجميع من سيجلب ماذا.',
+      item_meat: 'لحم',
+      item_rice: 'رز',
+      item_coffee: 'قهوة',
+      item_bread: 'خبز',
+      addNeedItemPlaceholder: 'اسم غرض آخر — مثال: فحم',
+      addNeedItemBtn: '+ إضافة',
+      unclaimedColumnTitle: 'غير محجوز',
+      dragHint: 'اسحبوا غرضًا هنا',
+      addLaneTrigger: '+ إضافة شخص',
+      newLanePlaceholder: 'اسم الشخص',
+      confirmAddLaneBtn: 'إضافة',
+      removeColumn: 'إزالة عمود {person}',
+      removeItem: 'حذف هذا الغرض',
+      skipNeedsBtn: 'تخطّي هذه الخطوة',
+      continueToExpensesBtn: 'التالي: تسجيل المصاريف',
+      mainSectionTitle: 'حسابات المشاركين',
+      addAccountBtn: '+ إضافة حساب شخص',
+      calcBtn: 'احسب التسوية',
+      errorNeedPositiveAmount: 'أدخلوا مبلغًا واحدًا على الأقل أكبر من صفر.',
+      errorShishaNoSmoker: 'سجّلتم تكلفة معسل، لكن لا يوجد أي شخص محدَّد كمدخّن للشيشة ليشارك فيها.',
+      nameFieldLabel: 'اسم الشخص',
+      accountNamePlaceholder: 'مثال: سالم أو أي اسم مسجّل',
+      subtotalLabel: 'إجمالي مشترياته',
+      removeAccountAria: 'حذف هذا الحساب',
+      addItemBtn: '+ إضافة عنصر مُشترى',
+      itemsEmpty: 'لا مشتريات مسجلة بعد.',
+      itemDescPlaceholder: 'مثال: تذاكر الطيران',
+      itemShishaLabel: 'معسل',
+      removeItemRowAria: 'حذف هذا العنصر',
+      registerPromptPrefix: 'تسجيل',
+      registerPromptSuffix: '— هل يدخّن الشيشة؟',
+      rpYes: 'نعم، يدخّن',
+      rpNo: 'لا',
+      smokerRegisteredBadge: 'مدخّن شيشة (مسجّل)',
+      resultsSectionTitle: 'الملخص',
+      totalLabel: 'إجمالي المصروف العام',
+      shareLabel: 'حصة الفرد من المصروف العام',
+      shishaTotalLabel: 'تكلفة المعسل',
+      shishaShareLabel: 'حصة المدخن الواحد',
+      shishaNote: 'يشارك في تكلفة المعسل من دخّن الشيشة فقط.',
+      settleSectionTitle: 'التسوية النهائية',
+      settleNote: 'أقل عدد تحويلات ممكن لتصفير الحساب بين الجميع.',
+      resetBtnLabel: 'بدء رحلة جديدة',
+      footerNote: 'الحسابات وأسماء المستخدمين المسجّلة تُحفظ بالكامل في متصفحك — لا تُرسل أي بيانات لأي خادم.',
+      pillEven: 'بالتمام',
+      pillCredit: 'فائض +{amount}',
+      pillDebit: 'نقص −{amount}',
+      paidAmount: 'دفع {amount}',
+      itemCountZero: 'بلا مشتريات',
+      itemCountOne: 'عنصر واحد',
+      itemCountMany: '{n} عناصر',
+      smokerBadge: 'مدخّن شيشة',
+      settleEmptyState: 'لا حاجة لأي تحويلات — الجميع دفع حصته بالضبط.',
+      paysLabel: 'يدفع',
+      personFallback: 'شخص {n}',
+    },
+    hi: {
+      tagline: 'इस ऐप में हर व्यक्ति का अपना हिसाब होता है — उसने जो कुछ भी ख़रीदा वह दर्ज करें, और तय करें कि कौन शीशा पीता है ताकि वह शीशे के ख़र्च में अकेले हिस्सा ले, साथ ही सभी मिलकर कुल ख़र्च में हिस्सा लें।',
+      loggedInAs: 'इस नाम से लॉग इन है:',
+      newTripSectionTitle: 'नई यात्रा',
+      introQuestion: 'क्या आप एक नई यात्रा शुरू करना चाहते हैं?',
+      introLede: 'हर सदस्य के लिए एक हिसाब बनाएं, उसकी ख़रीदारी दर्ज करें — यह ऐप हर व्यक्ति का उचित हिस्सा निकालकर बताएगा कि किसे किसे भुगतान करना है।',
+      startTripBtn: 'हां, नई यात्रा शुरू करें',
+      loginSectionTitle: 'लॉग इन',
+      loginQuestion: 'इस यात्रा की शुरुआत कौन कर रहा है?',
+      loginLede: 'इस डिवाइस पर दर्ज किसी उपयोगकर्ता नाम को चुनें, या नया नाम दर्ज करके उसी नाम से शुरुआत करें।',
+      newUsernameLabel: 'नया उपयोगकर्ता नाम',
+      newUsernamePlaceholder: 'उदाहरण: सलीम',
+      smokerChipLabel: 'शीशा पीता है',
+      registerBtn: 'दर्ज करें और लॉग इन करें',
+      loginFineNote: 'यह दर्ज सिर्फ़ इसी डिवाइस पर, बिना किसी पासवर्ड के होता है — यह कोई ऑनलाइन खाता नहीं है और दूसरे डिवाइस पर दिखाई नहीं देता।',
+      loginErrorEmptyName: 'दर्ज करने से पहले एक उपयोगकर्ता नाम लिखें।',
+      knownUsersEmpty: 'इस डिवाइस पर अभी तक कोई उपयोगकर्ता दर्ज नहीं है — नीचे पहला नाम दर्ज करें।',
+      smokerMarkSuffix: ' · शीशा पीता है',
+      needsSectionTitle: 'ज़रूरी सामान',
+      needsLede: 'पैसों की बात करने से पहले वह सब कुछ दर्ज करें जो साथ लाना है, फिर हर सामान के कार्ड को उस व्यक्ति के कॉलम में खींच कर ले जाएं जो उसे लाएगा — इस तरह सबको पता चलेगा कि कौन क्या लाएगा।',
+      item_meat: 'मांस',
+      item_rice: 'चावल',
+      item_coffee: 'कॉफ़ी',
+      item_bread: 'ब्रेड',
+      addNeedItemPlaceholder: 'किसी और सामान का नाम — उदाहरण: कोयला',
+      addNeedItemBtn: '+ जोड़ें',
+      unclaimedColumnTitle: 'अनिर्धारित',
+      dragHint: 'यहां सामान खींच कर लाएं',
+      addLaneTrigger: '+ व्यक्ति जोड़ें',
+      newLanePlaceholder: 'व्यक्ति का नाम',
+      confirmAddLaneBtn: 'जोड़ें',
+      removeColumn: '{person} का कॉलम हटाएं',
+      removeItem: 'यह सामान हटाएं',
+      skipNeedsBtn: 'यह चरण छोड़ें',
+      continueToExpensesBtn: 'अगला: ख़र्च दर्ज करें',
+      mainSectionTitle: 'सदस्यों के हिसाब',
+      addAccountBtn: '+ व्यक्ति का हिसाब जोड़ें',
+      calcBtn: 'हिसाब निकालें',
+      errorNeedPositiveAmount: 'कम से कम एक ऐसी राशि दर्ज करें जो शून्य से बड़ी हो।',
+      errorShishaNoSmoker: 'आपने शीशे का ख़र्च दर्ज किया है, लेकिन कोई भी व्यक्ति शीशा पीने वाले के रूप में नहीं चुना गया।',
+      nameFieldLabel: 'व्यक्ति का नाम',
+      accountNamePlaceholder: 'उदाहरण: सलीम या कोई भी दर्ज नाम',
+      subtotalLabel: 'कुल ख़रीदारी',
+      removeAccountAria: 'यह हिसाब हटाएं',
+      addItemBtn: '+ ख़रीदी गई वस्तु जोड़ें',
+      itemsEmpty: 'अभी तक कोई ख़रीदारी दर्ज नहीं है।',
+      itemDescPlaceholder: 'उदाहरण: हवाई टिकट',
+      itemShishaLabel: 'शीशा',
+      removeItemRowAria: 'यह वस्तु हटाएं',
+      registerPromptPrefix: 'दर्ज:',
+      registerPromptSuffix: '— क्या यह शीशा पीता है?',
+      rpYes: 'हां, पीता है',
+      rpNo: 'नहीं',
+      smokerRegisteredBadge: 'शीशा पीने वाला (दर्ज)',
+      resultsSectionTitle: 'सारांश',
+      totalLabel: 'कुल सामान्य ख़र्च',
+      shareLabel: 'सामान्य ख़र्च में हर व्यक्ति का हिस्सा',
+      shishaTotalLabel: 'शीशे का ख़र्च',
+      shishaShareLabel: 'हर शीशा पीने वाले का हिस्सा',
+      shishaNote: 'शीशे के ख़र्च में केवल वही लोग हिस्सा लेते हैं जिन्होंने शीशा पिया।',
+      settleSectionTitle: 'अंतिम निपटान',
+      settleNote: 'सबका हिसाब बराबर करने के लिए कम से कम लेन-देन।',
+      resetBtnLabel: 'नई यात्रा शुरू करें',
+      footerNote: 'सभी हिसाब और दर्ज उपयोगकर्ता नाम पूरी तरह आपके ब्राउज़र में सहेजे जाते हैं — कोई डेटा किसी सर्वर पर नहीं भेजा जाता।',
+      pillEven: 'बराबर',
+      pillCredit: 'अतिरिक्त +{amount}',
+      pillDebit: 'कमी −{amount}',
+      paidAmount: '{amount} भुगतान किया',
+      itemCountZero: 'कोई ख़रीदारी नहीं',
+      itemCountOne: 'एक वस्तु',
+      itemCountMany: '{n} वस्तुएं',
+      smokerBadge: 'शीशा पीने वाला',
+      settleEmptyState: 'किसी लेन-देन की ज़रूरत नहीं — सबने अपना हिस्सा ठीक-ठीक चुका दिया है।',
+      paysLabel: 'भुगतान करेगा',
+      personFallback: 'व्यक्ति {n}',
+    },
+  };
+  let currentLang = 'ar';
+
+  function T(key, params) {
+    const dict = I18N[currentLang] || I18N.ar;
+    let str = (dict && dict[key] != null) ? dict[key] : (I18N.ar[key] != null ? I18N.ar[key] : key);
+    if (params) {
+      Object.keys(params).forEach((p) => {
+        str = str.replace(new RegExp('\\{' + p + '\\}', 'g'), () => String(params[p]));
+      });
+    }
+    return str;
+  }
+
+  function i18nParams(el) {
+    const params = {};
+    Object.keys(el.dataset).forEach((k) => {
+      if (k.indexOf('arg') === 0 && k.length > 3) {
+        const name = k.charAt(3).toLowerCase() + k.slice(4);
+        params[name] = el.dataset[k];
+      }
+    });
+    return params;
+  }
+
+  function applyI18n(root) {
+    root.querySelectorAll('[data-i18n]').forEach((el) => {
+      el.textContent = T(el.dataset.i18n, i18nParams(el));
+    });
+    root.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      el.placeholder = T(el.dataset.i18nPlaceholder, i18nParams(el));
+    });
+    root.querySelectorAll('[data-i18n-aria-label]').forEach((el) => {
+      el.setAttribute('aria-label', T(el.dataset.i18nAriaLabel, i18nParams(el)));
+    });
+  }
+
+  function setLang(lang) {
+    currentLang = (lang === 'hi') ? 'hi' : 'ar';
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === 'hi' ? 'ltr' : 'rtl';
+    document.documentElement.dataset.lang = currentLang;
+    try { localStorage.setItem(LANG_KEY, currentLang); } catch (e) { /* storage unavailable */ }
+    langSwitch.querySelectorAll('button').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.lang === currentLang);
+    });
+    applyI18n(document);
+    renderQuickSuggestions();
+    refreshUserUI();
+    // إن كانت نتائج التسوية معروضة بالفعل، أعيدوا حسابها لتظهر بنفس اللغة الجديدة (بلا تمرير الصفحة)
+    if (!results.hidden) calculate(true);
+  }
 
   // ---- Local username "directory" (this device only, no password, no server) ----
   const USERS_KEY = 'tripLedgerUsers';
@@ -1236,8 +1506,8 @@
     const users = loadUsers();
     usersDatalist.innerHTML = users.map(u => `<option value="${escapeHtml(u.name)}"></option>`).join('');
     knownUsersList.innerHTML = users.length
-      ? users.map(u => `<button type="button" class="user-chip" data-username="${escapeHtml(u.name)}" data-smoker="${u.smoker ? 1 : 0}">${escapeHtml(u.name)}${u.smoker ? ' <span class="chip-smoker-mark">· مدخّن</span>' : ''}</button>`).join('')
-      : '<p class="known-users-empty">لا يوجد مستخدمون مسجّلون على هذا الجهاز بعد — سجّلوا أول اسم أدناه.</p>';
+      ? users.map(u => `<button type="button" class="user-chip" data-username="${escapeHtml(u.name)}" data-smoker="${u.smoker ? 1 : 0}">${escapeHtml(u.name)}${u.smoker ? ` <span class="chip-smoker-mark">${escapeHtml(T('smokerMarkSuffix'))}</span>` : ''}</button>`).join('')
+      : `<p class="known-users-empty">${escapeHtml(T('knownUsersEmpty'))}</p>`;
   }
 
   const fmt = (n) => (Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1254,7 +1524,6 @@
     `;
   }
   stampSerial();
-  refreshUserUI();
 
   function renumber() {
     const cards = listEl.querySelectorAll('.account-card');
@@ -1280,7 +1549,8 @@
     if (!hasItems && !empty) {
       empty = document.createElement('p');
       empty.className = 'items-empty';
-      empty.textContent = 'لا مشتريات مسجلة بعد.';
+      empty.dataset.i18n = 'itemsEmpty';
+      empty.textContent = T('itemsEmpty');
       itemsList.prepend(empty);
     } else if (hasItems && empty) {
       empty.remove();
@@ -1292,13 +1562,13 @@
     const row = document.createElement('div');
     row.className = 'item-row';
     row.innerHTML = `
-      <input type="text" class="item-desc" placeholder="مثال: تذاكر الطيران" value="${desc}">
+      <input type="text" class="item-desc" data-i18n-placeholder="itemDescPlaceholder" placeholder="${escapeHtml(T('itemDescPlaceholder'))}" value="${desc}">
       <input type="number" class="item-price" inputmode="decimal" step="0.01" min="0" placeholder="0.00" value="${price}">
       <label class="item-shisha-chip${isShisha ? ' active' : ''}">
         <input type="checkbox" class="item-shisha" ${isShisha ? 'checked' : ''}>
-        <span>معسل</span>
+        <span data-i18n="itemShishaLabel">${escapeHtml(T('itemShishaLabel'))}</span>
       </label>
-      <button type="button" class="item-remove" aria-label="حذف هذا العنصر">×</button>
+      <button type="button" class="item-remove" data-i18n-aria-label="removeItemRowAria" aria-label="${escapeHtml(T('removeItemRowAria'))}">×</button>
     `;
     row.querySelector('.item-remove').addEventListener('click', () => {
       row.remove();
@@ -1337,14 +1607,14 @@
     const user = findUser(name);
     if (user) {
       card.dataset.smoker = user.smoker ? '1' : '0';
-      status.innerHTML = user.smoker ? '<span class="badge-smoker">مدخّن شيشة (مسجّل)</span>' : '';
+      status.innerHTML = user.smoker ? `<span class="badge-smoker" data-i18n="smokerRegisteredBadge">${escapeHtml(T('smokerRegisteredBadge'))}</span>` : '';
     } else {
       // اسم جديد لم يُسجَّل بعد على هذا الجهاز — نسأل عن صفة الشيشة الآن، عند تسجيله، لا لاحقًا عند إضافة مصروفاته
       status.innerHTML = `
         <div class="register-prompt">
-          <span>تسجيل «<strong>${escapeHtml(name)}</strong>» — هل يدخّن الشيشة؟</span>
-          <button type="button" class="rp-yes">نعم، يدخّن</button>
-          <button type="button" class="rp-no">لا</button>
+          <span><span data-i18n="registerPromptPrefix">${escapeHtml(T('registerPromptPrefix'))}</span> "<strong>${escapeHtml(name)}</strong>" <span data-i18n="registerPromptSuffix">${escapeHtml(T('registerPromptSuffix'))}</span></span>
+          <button type="button" class="rp-yes" data-i18n="rpYes">${escapeHtml(T('rpYes'))}</button>
+          <button type="button" class="rp-no" data-i18n="rpNo">${escapeHtml(T('rpNo'))}</button>
         </div>
       `;
       status.querySelector('.rp-yes').addEventListener('click', () => {
@@ -1352,7 +1622,7 @@
         refreshUserUI();
         // نطبّق الاختيار مباشرة بدل إعادة القراءة من التخزين، لأن بعض المتصفحات (وضع التصفح الخاص مثلًا) قد تمنع الحفظ فعليًا
         card.dataset.smoker = '1';
-        status.innerHTML = '<span class="badge-smoker">مدخّن شيشة (مسجّل)</span>';
+        status.innerHTML = `<span class="badge-smoker" data-i18n="smokerRegisteredBadge">${escapeHtml(T('smokerRegisteredBadge'))}</span>`;
       });
       status.querySelector('.rp-no').addEventListener('click', () => {
         registerUser(name, false);
@@ -1371,18 +1641,18 @@
       <div class="account-head">
         <div class="acct-index">01</div>
         <div class="field name-field">
-          <label>اسم الشخص</label>
-          <input type="text" class="account-name" list="knownUsersDatalist" placeholder="مثال: سالم أو أي اسم مسجّل" value="${name}">
+          <label data-i18n="nameFieldLabel">${escapeHtml(T('nameFieldLabel'))}</label>
+          <input type="text" class="account-name" list="knownUsersDatalist" data-i18n-placeholder="accountNamePlaceholder" placeholder="${escapeHtml(T('accountNamePlaceholder'))}" value="${name}">
         </div>
         <div class="acct-subtotal">
-          <div class="label">إجمالي مشترياته</div>
+          <div class="label" data-i18n="subtotalLabel">${escapeHtml(T('subtotalLabel'))}</div>
           <div class="value num">0.00</div>
         </div>
-        <button type="button" class="row-remove account-remove" aria-label="حذف هذا الحساب">×</button>
+        <button type="button" class="row-remove account-remove" data-i18n-aria-label="removeAccountAria" aria-label="${escapeHtml(T('removeAccountAria'))}">×</button>
       </div>
       <div class="account-status"></div>
       <div class="items-list"></div>
-      <button type="button" class="add-item-btn">+ إضافة عنصر مُشترى</button>
+      <button type="button" class="add-item-btn" data-i18n="addItemBtn">${escapeHtml(T('addItemBtn'))}</button>
     `;
     card.querySelector('.account-remove').addEventListener('click', () => {
       if (listEl.querySelectorAll('.account-card').length <= 2) return;
@@ -1403,7 +1673,7 @@
     if (knownSmoker !== null) {
       // الاسم مسجَّل مسبقًا وصفة الشيشة معروفة من تسجيل الدخول — لا حاجة لسؤاله مجددًا هنا
       card.dataset.resolvedName = name.trim().toLowerCase();
-      card.querySelector('.account-status').innerHTML = knownSmoker ? '<span class="badge-smoker">مدخّن شيشة (مسجّل)</span>' : '';
+      card.querySelector('.account-status').innerHTML = knownSmoker ? `<span class="badge-smoker" data-i18n="smokerRegisteredBadge">${escapeHtml(T('smokerRegisteredBadge'))}</span>` : '';
     } else if (name.trim()) {
       renderAccountStatus(card);
     }
@@ -1418,9 +1688,28 @@
     'خضار': '🥦', 'فواكه': '🍎', 'بيض': '🥚', 'جبن': '🧀', 'جبنة': '🧀',
     'سكر': '🍬', 'ملح': '🧂', 'ثلج': '🧊', 'عصير': '🧃', 'مشروبات': '🥤',
     'تمر': '🌰', 'خيمة': '⛺', 'حطب': '🪵',
+    'मांस': '🥩', 'चिकन': '🍗', 'मछली': '🐟', 'चावल': '🍚',
+    'ब्रेड': '🍞', 'कॉफ़ी': '☕', 'चाय': '🍵', 'दूध': '🥛', 'पानी': '💧',
+    'कोयला': '🔥', 'आलू': '🥔', 'टमाटर': '🍅',
+    'सब्ज़ी': '🥦', 'फल': '🍎', 'अंडा': '🥚', 'पनीर': '🧀',
+    'चीनी': '🍬', 'नमक': '🧂', 'बर्फ़': '🧊', 'जूस': '🧃', 'ड्रिंक्स': '🥤',
+    'खजूर': '🌰', 'टेंट': '⛺', 'लकड़ी': '🪵',
   };
   function itemEmoji(name) {
     return ITEM_EMOJIS[name.trim()] || '🛍️';
+  }
+
+  const QUICK_ITEMS = [
+    { key: 'meat', emoji: '🥩' },
+    { key: 'rice', emoji: '🍚' },
+    { key: 'coffee', emoji: '☕' },
+    { key: 'bread', emoji: '🍞' },
+  ];
+
+  function renderQuickSuggestions() {
+    quickSuggestions.innerHTML = QUICK_ITEMS.map((it) =>
+      `<button type="button" class="user-chip suggest-chip" data-key="${it.key}">+ ${it.emoji} ${escapeHtml(T('item_' + it.key))}</button>`
+    ).join('');
   }
 
   let dragCtx = null;
@@ -1437,7 +1726,8 @@
     if (count === 0 && !hint) {
       hint = document.createElement('p');
       hint.className = 'kanban-col-empty-hint';
-      hint.textContent = 'اسحبوا غرضًا هنا';
+      hint.dataset.i18n = 'dragHint';
+      hint.textContent = T('dragHint');
       body.appendChild(hint);
     } else if (count > 0 && hint) {
       hint.remove();
@@ -1526,7 +1816,7 @@
     card.innerHTML = `
       <span class="kanban-card-emoji">${itemEmoji(name)}</span>
       <span class="kanban-card-name">${escapeHtml(name)}</span>
-      <button type="button" class="kanban-card-remove" aria-label="حذف هذا الغرض">×</button>
+      <button type="button" class="kanban-card-remove" data-i18n-aria-label="removeItem" aria-label="${escapeHtml(T('removeItem'))}">×</button>
     `;
     card.querySelector('.kanban-card-remove').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1567,7 +1857,7 @@
   quickSuggestions.addEventListener('click', (e) => {
     const btn = e.target.closest('.suggest-chip');
     if (!btn) return;
-    addNeedItem(btn.dataset.item);
+    addNeedItem(T('item_' + btn.dataset.key));
   });
 
   function createColumn(person) {
@@ -1578,7 +1868,7 @@
       <div class="kanban-col-header">
         <span class="kanban-col-title">${escapeHtml(person)}</span>
         <span class="kanban-col-count">0</span>
-        <button type="button" class="kanban-col-remove" aria-label="إزالة عمود ${escapeHtml(person)}">×</button>
+        <button type="button" class="kanban-col-remove" data-i18n-aria-label="removeColumn" data-arg-person="${escapeHtml(person)}" aria-label="${escapeHtml(T('removeColumn', { person }))}">×</button>
       </div>
       <div class="kanban-col-body"></div>
     `;
@@ -1720,7 +2010,7 @@
   registerBtn.addEventListener('click', () => {
     const name = newUsernameInput.value.trim();
     if (!name) {
-      loginError.textContent = 'اكتبوا اسم مستخدم قبل التسجيل.';
+      loginError.textContent = T('loginErrorEmptyName');
       return;
     }
     loginError.textContent = '';
@@ -1761,14 +2051,14 @@
     return tx;
   }
 
-  function calculate() {
+  function calculate(skipScroll) {
     errorMsg.textContent = '';
     const cards = [...listEl.querySelectorAll('.account-card')];
     // يتأكد أن حالة تسجيل كل شخص (اسمه وصفة الشيشة) محدَّثة قبل قراءتها، حتى لو لم يخرج الحقل من التركيز بعد
     cards.forEach(renderAccountStatus);
     const people = cards.map((card, idx) => {
       const nameInput = card.querySelector('.account-name');
-      const name = nameInput.value.trim() || `شخص ${idx + 1}`;
+      const name = nameInput.value.trim() || T('personFallback', { n: idx + 1 });
       const isSmoker = card.dataset.smoker === '1';
       const items = [...card.querySelectorAll('.item-row')].map(row => {
         const v = parseFloat(row.querySelector('.item-price').value);
@@ -1782,14 +2072,14 @@
     const generalTotal = people.reduce((s, p) => s + (p.paid - p.shishaPaid), 0);
     const shishaTotal = people.reduce((s, p) => s + p.shishaPaid, 0);
     if (generalTotal + shishaTotal <= 0) {
-      errorMsg.textContent = 'أدخلوا مبلغًا واحدًا على الأقل أكبر من صفر.';
+      errorMsg.textContent = T('errorNeedPositiveAmount');
       results.hidden = true;
       return;
     }
 
     const smokers = people.filter(p => p.isSmoker);
     if (shishaTotal > 0 && smokers.length === 0) {
-      errorMsg.textContent = 'سجّلتم تكلفة معسل، لكن لا يوجد أي شخص محدَّد كمدخّن للشيشة ليشارك فيها.';
+      errorMsg.textContent = T('errorShishaNoSmoker');
       results.hidden = true;
       return;
     }
@@ -1821,18 +2111,18 @@
     people.forEach(p => {
       const row = document.createElement('div');
       row.className = 'balance-row';
-      let pillClass = 'even', pillText = 'بالتمام';
-      if (p.balance > 0.005) { pillClass = 'credit'; pillText = `فائض +${fmt(p.balance)}`; }
-      else if (p.balance < -0.005) { pillClass = 'debit'; pillText = `نقص −${fmt(Math.abs(p.balance))}`; }
-      const itemLabel = p.itemCount === 0 ? 'بلا مشتريات' : p.itemCount === 1 ? 'عنصر واحد' : `${p.itemCount} عناصر`;
-      const smokerBadge = p.isSmoker ? '<span class="badge-smoker">مدخّن شيشة</span>' : '';
+      let pillClass = 'even', pillText = T('pillEven');
+      if (p.balance > 0.005) { pillClass = 'credit'; pillText = T('pillCredit', { amount: fmt(p.balance) }); }
+      else if (p.balance < -0.005) { pillClass = 'debit'; pillText = T('pillDebit', { amount: fmt(Math.abs(p.balance)) }); }
+      const itemLabel = p.itemCount === 0 ? T('itemCountZero') : p.itemCount === 1 ? T('itemCountOne') : T('itemCountMany', { n: p.itemCount });
+      const smokerBadge = p.isSmoker ? `<span class="badge-smoker">${escapeHtml(T('smokerBadge'))}</span>` : '';
       row.innerHTML = `
         <div class="who">
           <span class="name">${escapeHtml(p.name)}</span>
           ${smokerBadge}
-          <span class="paid num">دفع ${fmt(p.paid)} · ${itemLabel}</span>
+          <span class="paid num">${escapeHtml(T('paidAmount', { amount: fmt(p.paid) }))} · ${escapeHtml(itemLabel)}</span>
         </div>
-        <span class="pill ${pillClass}">${pillText}</span>
+        <span class="pill ${pillClass}">${escapeHtml(pillText)}</span>
       `;
       balanceList.appendChild(row);
     });
@@ -1841,14 +2131,14 @@
     const settlementList = document.getElementById('settlementList');
     settlementList.innerHTML = '';
     if (tx.length === 0) {
-      settlementList.innerHTML = '<div class="empty-state">لا حاجة لأي تحويلات — الجميع دفع حصته بالضبط.</div>';
+      settlementList.innerHTML = `<div class="empty-state">${escapeHtml(T('settleEmptyState'))}</div>`;
     } else {
       tx.forEach(t => {
         const stub = document.createElement('div');
         stub.className = 'stub';
         stub.innerHTML = `
           <span class="party from">${escapeHtml(t.from)}</span>
-          <span class="arrow">يدفع <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M13 8H3"/><path d="M6.5 4.5 3 8l3.5 3.5"/></svg></span>
+          <span class="arrow">${escapeHtml(T('paysLabel'))} <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M13 8H3"/><path d="M6.5 4.5 3 8l3.5 3.5"/></svg></span>
           <span class="party to">${escapeHtml(t.to)}</span>
           <span class="leader"></span>
           <span class="amount num">${fmt(t.amount)}</span>
@@ -1858,7 +2148,7 @@
     }
 
     results.hidden = false;
-    results.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
+    if (!skipScroll) results.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
   }
 
   function escapeHtml(str) {
@@ -1870,6 +2160,19 @@
   calcBtn.addEventListener('click', calculate);
 
   resetBtn.addEventListener('click', showIntro);
+
+  // ---- Init: apply saved/default language last, once everything above is defined ----
+  langSwitch.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-lang]');
+    if (!btn) return;
+    setLang(btn.dataset.lang);
+  });
+  let initialLang = 'ar';
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    if (saved === 'ar' || saved === 'hi') initialLang = saved;
+  } catch (e) { /* storage unavailable */ }
+  setLang(initialLang);
 })();
 </script>
 </body>
