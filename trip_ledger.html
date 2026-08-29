@@ -1295,7 +1295,7 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
+const dbRef = getFirestore(firebaseApp);
 
 (function () {
   const listEl = document.getElementById('accountsList');
@@ -1605,27 +1605,27 @@ const db = getFirestore(firebaseApp);
     const trimmed = username.trim();
     const normalized = normalizeUsername(trimmed);
     if (!normalized) { const err = new Error('empty-username'); err.code = 'empty-username'; throw err; }
-    const takenSnap = await getDoc(doc(db, 'usernames', normalized));
+    const takenSnap = await getDoc(doc(dbRef, 'usernames', normalized));
     if (takenSnap.exists()) { const err = new Error('username-taken'); err.code = 'username-taken'; throw err; }
     const email = makeSyntheticEmail();
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db, 'usernames', normalized), { uid: cred.user.uid, email });
-    await setDoc(doc(db, 'users', cred.user.uid), { username: trimmed, smoker: !!smoker });
+    await setDoc(doc(dbRef, 'usernames', normalized), { uid: cred.user.uid, email });
+    await setDoc(doc(dbRef, 'users', cred.user.uid), { username: trimmed, smoker: !!smoker });
     return { uid: cred.user.uid, username: trimmed, smoker: !!smoker };
   }
 
   async function fbLogin(username, password) {
     const normalized = normalizeUsername(username);
-    const mapSnap = await getDoc(doc(db, 'usernames', normalized));
+    const mapSnap = await getDoc(doc(dbRef, 'usernames', normalized));
     if (!mapSnap.exists()) { const err = new Error('user-not-found'); err.code = 'user-not-found'; throw err; }
     const cred = await signInWithEmailAndPassword(auth, mapSnap.data().email, password);
-    const profSnap = await getDoc(doc(db, 'users', cred.user.uid));
+    const profSnap = await getDoc(doc(dbRef, 'users', cred.user.uid));
     const profile = profSnap.exists() ? profSnap.data() : { username: username.trim(), smoker: false };
     return { uid: cred.user.uid, username: profile.username, smoker: !!profile.smoker };
   }
 
   async function fetchAllUsers() {
-    const snap = await getDocs(collection(db, 'users'));
+    const snap = await getDocs(collection(dbRef, 'users'));
     const list = [];
     snap.forEach((d) => list.push(d.data()));
     list.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
@@ -2187,7 +2187,7 @@ const db = getFirestore(firebaseApp);
     firebaseUser = user;
     if (user) {
       try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
+        const snap = await getDoc(doc(dbRef, 'users', user.uid));
         cachedProfile = snap.exists() ? snap.data() : { username: user.email, smoker: false };
       } catch (e) {
         cachedProfile = null;
