@@ -1391,6 +1391,8 @@ const dbRef = getFirestore(firebaseApp);
       loginErrorWrongPassword: 'كلمة المرور غير صحيحة.',
       loginErrorNetwork: 'تعذّر الاتصال — تحقّقوا من الإنترنت وحاولوا مجددًا.',
       loginErrorTooManyRequests: 'محاولات كثيرة جدًا — حاولوا لاحقًا.',
+      loginErrorPermission: 'تعذّر الوصول إلى قاعدة البيانات — تأكدوا أن قواعد الأمان (Firestore Rules) نُشرت بشكل صحيح في Firebase Console.',
+      loginErrorConfig: 'إعداد Firebase غير مكتمل — تأكدوا أن مزوّد Email/Password مفعَّل من Authentication، وأن قيم firebaseConfig صحيحة.',
       loginErrorGeneric: 'حدث خطأ غير متوقع — حاولوا مجددًا.',
       knownUsersEmpty: 'لا يوجد أي حساب مسجَّل بعد — أنشئوا أول حساب أدناه.',
       smokerMarkSuffix: ' · مدخّن',
@@ -1481,6 +1483,8 @@ const dbRef = getFirestore(firebaseApp);
       loginErrorWrongPassword: 'पासवर्ड ग़लत है।',
       loginErrorNetwork: 'कनेक्ट नहीं हो सका — इंटरनेट जांचें और फिर से कोशिश करें।',
       loginErrorTooManyRequests: 'बहुत ज़्यादा कोशिशें — बाद में फिर आज़माएं।',
+      loginErrorPermission: 'डेटाबेस तक पहुंच नहीं हो सकी — जांचें कि Firestore सुरक्षा नियम (Rules) Firebase Console में सही तरीके से प्रकाशित हुए हैं।',
+      loginErrorConfig: 'Firebase सेटअप अधूरा है — जांचें कि Authentication में Email/Password सक्षम है, और firebaseConfig के मान सही हैं।',
       loginErrorGeneric: 'एक अनपेक्षित त्रुटि हुई — फिर से कोशिश करें।',
       knownUsersEmpty: 'अभी तक कोई खाता दर्ज नहीं है — नीचे पहला खाता बनाएं।',
       smokerMarkSuffix: ' · शीशा पीता है',
@@ -1644,6 +1648,10 @@ const dbRef = getFirestore(firebaseApp);
       'auth/weak-password': 'loginErrorWeakPassword',
       'auth/network-request-failed': 'loginErrorNetwork',
       'auth/too-many-requests': 'loginErrorTooManyRequests',
+      'permission-denied': 'loginErrorPermission',
+      'auth/api-key-not-valid.-please-pass-a-valid-api-key.': 'loginErrorConfig',
+      'auth/operation-not-allowed': 'loginErrorConfig',
+      'auth/configuration-not-found': 'loginErrorConfig',
     };
     return T(map[code] || 'loginErrorGeneric');
   }
@@ -2160,6 +2168,8 @@ const dbRef = getFirestore(firebaseApp);
         : await fbLogin(username, password);
       loginAs(result.username, result.smoker);
     } catch (err) {
+      // اطبعوا الخطأ الحقيقي في الـ console (F12) لتشخيص أي مشكلة لا تغطيها رسائل الترجمة أدناه
+      console.error('Atsh auth error:', err && err.code, err);
       loginError.textContent = authErrorMessage(err);
       authSubmitBtn.disabled = false;
       authSubmitBtn.textContent = originalLabel;
@@ -2190,6 +2200,7 @@ const dbRef = getFirestore(firebaseApp);
         const snap = await getDoc(doc(dbRef, 'users', user.uid));
         cachedProfile = snap.exists() ? snap.data() : { username: user.email, smoker: false };
       } catch (e) {
+        console.error('Atsh profile fetch error:', e && e.code, e);
         cachedProfile = null;
       }
     } else {
