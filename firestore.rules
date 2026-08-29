@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// قواعد أمان Firestore لتطبيق "قطة العتش".
+// انسخوا هذا الملف كاملًا إلى: Firebase Console → Firestore Database → Rules → الصقوا ثم Publish.
+//
+// المجموعات المستخدَمة:
+//  - usernames/{normalizedUsername}: يربط اسم المستخدم (بحروف صغيرة) بحساب Firebase Auth
+//    المقابل له (uid + بريد داخلي مولَّد). يُقرأ بلا تسجيل دخول لأن تسجيل الدخول نفسه
+//    يحتاج قراءته أولًا لمعرفة البريد المرتبط بالاسم قبل استدعاء signInWithEmailAndPassword.
+//  - users/{uid}: بيانات ملف المستخدم العلنية (اسم المستخدم وصفة تدخين الشيشة فقط —
+//    لا كلمات مرور ولا بيانات حساسة، فهي محفوظة ومُدارة بالكامل داخل Firebase Auth).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /usernames/{username} {
+      // القراءة متاحة للجميع (حتى قبل تسجيل الدخول) لأن تسجيل الدخول يحتاجها.
+      allow read: if true;
+      // الإنشاء فقط لحساب جديد لم يُسجَّل بعد، ومن صاحب الحساب نفسه فور إنشائه في Firebase Auth.
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid;
+      // لا تعديل ولا حذف لاحقًا — اسم المستخدم ثابت بعد التسجيل.
+      allow update, delete: if false;
+    }
+
+    match /users/{uid} {
+      // القراءة متاحة للجميع لعرض قائمة الأسماء المعروفة في شاشة الدخول قبل المصادقة.
+      allow read: if true;
+      // الكتابة فقط من صاحب الحساب نفسه على مستنده الخاص.
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
