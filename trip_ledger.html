@@ -607,38 +607,10 @@
   }
 
   /* ---------- Shisha (معسل) participation ---------- */
-  .account-status:not(:empty) {
-    margin-bottom: 0.85rem;
+  .account-smoker-chip {
+    align-self: center;
+    flex-shrink: 0;
   }
-
-  .register-prompt {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    font-size: 0.82rem;
-    color: var(--ink-soft);
-    background: var(--surface);
-    border: 1px dashed var(--line);
-    border-radius: 4px;
-    padding: 0.5rem 0.7rem;
-  }
-
-  .register-prompt strong { color: var(--ink); }
-
-  .register-prompt button {
-    font: inherit;
-    font-weight: 700;
-    font-size: 0.78rem;
-    padding: 0.2rem 0.65rem;
-    border-radius: 4px;
-    border: 1px solid var(--line);
-    background: var(--surface-sunken);
-    color: var(--ink);
-    cursor: pointer;
-  }
-  .register-prompt button.rp-yes:hover { border-color: var(--highlight); color: var(--highlight); }
-  .register-prompt button.rp-no:hover { border-color: var(--debt); color: var(--debt); }
 
   .smoker-chip {
     display: inline-flex;
@@ -1013,6 +985,56 @@
     .masthead-side { flex-direction: row; align-self: stretch; justify-content: space-between; }
   }
 
+  /* ---------- Auth (Firebase) ---------- */
+  .auth-mode-switch {
+    display: inline-flex;
+    gap: 0.3rem;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface-sunken);
+    margin-bottom: 1.1rem;
+  }
+
+  .auth-mode-switch button {
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+  }
+
+  .auth-mode-switch button:hover { color: var(--ink); }
+
+  .auth-mode-switch button.active {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .already-signed-in {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .already-signed-in p { margin: 0 0 0.75rem; }
+  .already-signed-in strong { color: var(--accent); }
+
+  .session-note a {
+    color: var(--ink-soft);
+    font-size: 0.85em;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .session-note a:hover { color: var(--accent); }
+
   /* ---------- Language switch (Arabic / Hindi) ---------- */
   .masthead-side {
     display: flex;
@@ -1076,7 +1098,7 @@
     <div>
       <h1 class="display">قطة العتش</h1>
       <p class="lede" data-i18n="tagline"></p>
-      <p class="session-note" id="sessionNote" hidden><span data-i18n="loggedInAs"></span> <strong id="sessionUserName"></strong></p>
+      <p class="session-note" id="sessionNote" hidden><span data-i18n="loggedInAs"></span> <strong id="sessionUserName"></strong> · <a href="#" id="signOutLink" data-i18n="signOutLink"></a></p>
     </div>
     <div class="masthead-side">
       <div class="lang-switch" id="langSwitch" role="group" aria-label="Language">
@@ -1104,19 +1126,43 @@
       <h2 class="intro-question display" data-i18n="loginQuestion"></h2>
       <p class="lede" style="margin-bottom:1.1rem" data-i18n="loginLede"></p>
 
-      <div class="known-users" id="knownUsersList"></div>
-
-      <div class="login-form">
-        <div class="field">
-          <label data-i18n="newUsernameLabel"></label>
-          <input type="text" id="newUsernameInput" data-i18n-placeholder="newUsernamePlaceholder">
+      <div class="already-signed-in" id="alreadySignedIn" hidden>
+        <p><span data-i18n="alreadySignedInAs"></span> <strong id="alreadySignedInName"></strong></p>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="continueSessionBtn" data-i18n="continueBtn"></button>
+          <button type="button" class="btn-text" id="switchAccountBtn" data-i18n="switchAccountBtn"></button>
         </div>
-        <label class="smoker-chip" id="newUserSmokerChip">
-          <input type="checkbox" id="newUserSmoker">
-          <span data-i18n="smokerChipLabel"></span>
-        </label>
-        <button type="button" class="btn btn-primary" id="registerBtn" data-i18n="registerBtn"></button>
       </div>
+
+      <div id="authArea">
+        <div class="auth-mode-switch" id="authModeSwitch" role="group">
+          <button type="button" class="active" data-mode="signin" data-i18n="authModeSignIn"></button>
+          <button type="button" data-mode="register" data-i18n="authModeRegister"></button>
+        </div>
+
+        <div class="known-users" id="knownUsersList"></div>
+
+        <form class="login-form" id="authForm">
+          <div class="field">
+            <label data-i18n="newUsernameLabel"></label>
+            <input type="text" id="authUsernameInput" list="knownUsersDatalist" autocomplete="username" data-i18n-placeholder="newUsernamePlaceholder">
+          </div>
+          <div class="field">
+            <label data-i18n="passwordLabel"></label>
+            <input type="password" id="authPasswordInput" autocomplete="current-password">
+          </div>
+          <div class="field" id="authConfirmField" hidden>
+            <label data-i18n="confirmPasswordLabel"></label>
+            <input type="password" id="authConfirmPasswordInput" autocomplete="new-password">
+          </div>
+          <label class="smoker-chip" id="newUserSmokerChip" hidden>
+            <input type="checkbox" id="newUserSmoker">
+            <span data-i18n="smokerChipLabel"></span>
+          </label>
+          <button type="submit" class="btn btn-primary" id="authSubmitBtn" data-i18n="authSubmitSignIn"></button>
+        </form>
+      </div>
+
       <p class="error-msg" id="loginError" role="alert"></p>
       <p class="fine-note" data-i18n="loginFineNote"></p>
     </div>
@@ -1217,7 +1263,40 @@
   <footer data-i18n="footerNote"></footer>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  getDocs,
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+// ⚠️ عدّلوا القيم التالية لتطابق إعدادات مشروع Firebase الخاص بكم —
+// Firebase Console → Project settings → General → Your apps → SDK setup and configuration → Config
+// هذه القيم عامة (public) ومخصصة لتعريف المشروع للعميل، وليست أسرارًا يجب إخفاؤها.
+const firebaseConfig = {
+  apiKey: 'REPLACE_WITH_YOUR_API_KEY',
+  authDomain: 'REPLACE_WITH_YOUR_PROJECT.firebaseapp.com',
+  projectId: 'REPLACE_WITH_YOUR_PROJECT',
+  storageBucket: 'REPLACE_WITH_YOUR_PROJECT.appspot.com',
+  messagingSenderId: 'REPLACE_WITH_YOUR_SENDER_ID',
+  appId: 'REPLACE_WITH_YOUR_APP_ID',
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+
 (function () {
   const listEl = document.getElementById('accountsList');
   const countEl = document.getElementById('participantCount');
@@ -1228,15 +1307,26 @@
   const results = document.getElementById('results');
   const ticketSerial = document.getElementById('ticketSerial');
   const langSwitch = document.getElementById('langSwitch');
+  const signOutLink = document.getElementById('signOutLink');
   const introCard = document.getElementById('introCard');
   const mainCard = document.getElementById('mainCard');
   const startTripBtn = document.getElementById('startTripBtn');
   const loginCard = document.getElementById('loginCard');
+  const alreadySignedIn = document.getElementById('alreadySignedIn');
+  const alreadySignedInName = document.getElementById('alreadySignedInName');
+  const continueSessionBtn = document.getElementById('continueSessionBtn');
+  const switchAccountBtn = document.getElementById('switchAccountBtn');
+  const authArea = document.getElementById('authArea');
+  const authModeSwitch = document.getElementById('authModeSwitch');
   const knownUsersList = document.getElementById('knownUsersList');
-  const newUsernameInput = document.getElementById('newUsernameInput');
+  const authForm = document.getElementById('authForm');
+  const authUsernameInput = document.getElementById('authUsernameInput');
+  const authPasswordInput = document.getElementById('authPasswordInput');
+  const authConfirmField = document.getElementById('authConfirmField');
+  const authConfirmPasswordInput = document.getElementById('authConfirmPasswordInput');
   const newUserSmoker = document.getElementById('newUserSmoker');
   const newUserSmokerChip = document.getElementById('newUserSmokerChip');
-  const registerBtn = document.getElementById('registerBtn');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
   const loginError = document.getElementById('loginError');
   const usersDatalist = document.getElementById('knownUsersDatalist');
   const sessionNote = document.getElementById('sessionNote');
@@ -1259,6 +1349,9 @@
   const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let currentUser = null;
   let currentUserSmoker = false;
+  let authMode = 'signin';
+  let firebaseUser = null;
+  let cachedProfile = null;
 
 
   // ---- Language (Arabic / Hindi) ----
@@ -1273,14 +1366,33 @@
       startTripBtn: 'نعم، ابدأ رحلة جديدة',
       loginSectionTitle: 'تسجيل الدخول',
       loginQuestion: 'من يبدأ هذه الرحلة؟',
-      loginLede: 'اختاروا اسم مستخدم مسجّل على هذا الجهاز، أو سجّلوا اسمًا جديدًا لتبدأوا باسمه.',
-      newUsernameLabel: 'اسم مستخدم جديد',
+      loginLede: 'سجّلوا الدخول باسم مستخدم موجود بكلمة مروره، أو أنشئوا حسابًا جديدًا لتبدأوا باسمه.',
+      newUsernameLabel: 'اسم المستخدم',
       newUsernamePlaceholder: 'مثال: سالم',
       smokerChipLabel: 'يدخّن الشيشة',
-      registerBtn: 'تسجيل ودخول',
-      loginFineNote: 'التسجيل محلي على هذا الجهاز فقط وبلا كلمة مرور — ليس حسابًا عبر الإنترنت، ولا يظهر لأصحاب الأجهزة الأخرى.',
+      authModeSignIn: 'تسجيل الدخول',
+      authModeRegister: 'حساب جديد',
+      passwordLabel: 'كلمة المرور',
+      confirmPasswordLabel: 'تأكيد كلمة المرور',
+      authSubmitSignIn: 'دخول',
+      authSubmitRegister: 'إنشاء الحساب',
+      authSubmitLoading: 'جارٍ التحقق…',
+      alreadySignedInAs: 'أنتم مسجّلون الدخول بالفعل باسم',
+      continueBtn: 'متابعة',
+      switchAccountBtn: 'تسجيل الخروج لاستخدام حساب آخر',
+      signOutLink: 'تسجيل الخروج',
+      loginFineNote: 'الحسابات محفوظة في قاعدة بيانات مشتركة (Firebase) ويمكن الدخول بها من أي جهاز — كلمات المرور مشفّرة ولا يراها أحد.',
       loginErrorEmptyName: 'اكتبوا اسم مستخدم قبل التسجيل.',
-      knownUsersEmpty: 'لا يوجد مستخدمون مسجّلون على هذا الجهاز بعد — سجّلوا أول اسم أدناه.',
+      loginErrorEmptyPassword: 'اكتبوا كلمة المرور.',
+      loginErrorWeakPassword: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
+      loginErrorPasswordMismatch: 'كلمتا المرور غير متطابقتين.',
+      loginErrorUsernameTaken: 'اسم المستخدم هذا مُستخدَم بالفعل — جرّبوا اسمًا آخر أو سجّلوا الدخول به.',
+      loginErrorUserNotFound: 'لا يوجد مستخدم بهذا الاسم — تحقّقوا من الاسم أو أنشئوا حسابًا جديدًا.',
+      loginErrorWrongPassword: 'كلمة المرور غير صحيحة.',
+      loginErrorNetwork: 'تعذّر الاتصال — تحقّقوا من الإنترنت وحاولوا مجددًا.',
+      loginErrorTooManyRequests: 'محاولات كثيرة جدًا — حاولوا لاحقًا.',
+      loginErrorGeneric: 'حدث خطأ غير متوقع — حاولوا مجددًا.',
+      knownUsersEmpty: 'لا يوجد أي حساب مسجَّل بعد — أنشئوا أول حساب أدناه.',
       smokerMarkSuffix: ' · مدخّن',
       needsSectionTitle: 'الأغراض المطلوبة',
       needsLede: 'سجّلوا كل ما يجب إحضاره قبل أي حديث عن المبالغ، ثم اسحبوا بطاقة كل غرض إلى عمود الشخص الذي سيتكفّل به — فيعرف الجميع من سيجلب ماذا.',
@@ -1313,11 +1425,6 @@
       itemDescPlaceholder: 'مثال: تذاكر الطيران',
       itemShishaLabel: 'معسل',
       removeItemRowAria: 'حذف هذا العنصر',
-      registerPromptPrefix: 'تسجيل',
-      registerPromptSuffix: '— هل يدخّن الشيشة؟',
-      rpYes: 'نعم، يدخّن',
-      rpNo: 'لا',
-      smokerRegisteredBadge: 'مدخّن شيشة (مسجّل)',
       resultsSectionTitle: 'الملخص',
       totalLabel: 'إجمالي المصروف العام',
       shareLabel: 'حصة الفرد من المصروف العام',
@@ -1327,7 +1434,7 @@
       settleSectionTitle: 'التسوية النهائية',
       settleNote: 'أقل عدد تحويلات ممكن لتصفير الحساب بين الجميع.',
       resetBtnLabel: 'بدء رحلة جديدة',
-      footerNote: 'الحسابات وأسماء المستخدمين المسجّلة تُحفظ بالكامل في متصفحك — لا تُرسل أي بيانات لأي خادم.',
+      footerNote: 'أسماء المستخدمين وكلمات المرور محفوظة بأمان في قاعدة بيانات Firebase؛ تفاصيل الرحلة والمصاريف تبقى محليًا في متصفحك ولا تُرسل لأي خادم.',
       pillEven: 'بالتمام',
       pillCredit: 'فائض +{amount}',
       pillDebit: 'نقص −{amount}',
@@ -1349,14 +1456,33 @@
       startTripBtn: 'हां, नई यात्रा शुरू करें',
       loginSectionTitle: 'लॉग इन',
       loginQuestion: 'इस यात्रा की शुरुआत कौन कर रहा है?',
-      loginLede: 'इस डिवाइस पर दर्ज किसी उपयोगकर्ता नाम को चुनें, या नया नाम दर्ज करके उसी नाम से शुरुआत करें।',
-      newUsernameLabel: 'नया उपयोगकर्ता नाम',
+      loginLede: 'किसी मौजूदा उपयोगकर्ता नाम से उसके पासवर्ड के साथ लॉग इन करें, या नया खाता बनाकर उसी नाम से शुरुआत करें।',
+      newUsernameLabel: 'उपयोगकर्ता नाम',
       newUsernamePlaceholder: 'उदाहरण: सलीम',
       smokerChipLabel: 'शीशा पीता है',
-      registerBtn: 'दर्ज करें और लॉग इन करें',
-      loginFineNote: 'यह दर्ज सिर्फ़ इसी डिवाइस पर, बिना किसी पासवर्ड के होता है — यह कोई ऑनलाइन खाता नहीं है और दूसरे डिवाइस पर दिखाई नहीं देता।',
+      authModeSignIn: 'लॉग इन',
+      authModeRegister: 'नया खाता',
+      passwordLabel: 'पासवर्ड',
+      confirmPasswordLabel: 'पासवर्ड की पुष्टि करें',
+      authSubmitSignIn: 'साइन इन करें',
+      authSubmitRegister: 'खाता बनाएं',
+      authSubmitLoading: 'जांच रहे हैं…',
+      alreadySignedInAs: 'आप पहले से इस नाम से लॉग इन हैं',
+      continueBtn: 'जारी रखें',
+      switchAccountBtn: 'दूसरे खाते के लिए लॉग आउट करें',
+      signOutLink: 'लॉग आउट',
+      loginFineNote: 'खाते एक साझा डेटाबेस (Firebase) में सहेजे जाते हैं और किसी भी डिवाइस से लॉग इन किया जा सकता है — पासवर्ड सुरक्षित रूप से एन्क्रिप्टेड होते हैं और कोई नहीं देख सकता।',
       loginErrorEmptyName: 'दर्ज करने से पहले एक उपयोगकर्ता नाम लिखें।',
-      knownUsersEmpty: 'इस डिवाइस पर अभी तक कोई उपयोगकर्ता दर्ज नहीं है — नीचे पहला नाम दर्ज करें।',
+      loginErrorEmptyPassword: 'पासवर्ड लिखें।',
+      loginErrorWeakPassword: 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।',
+      loginErrorPasswordMismatch: 'दोनों पासवर्ड मेल नहीं खाते।',
+      loginErrorUsernameTaken: 'यह उपयोगकर्ता नाम पहले से मौजूद है — कोई और नाम आज़माएं या इसी नाम से लॉग इन करें।',
+      loginErrorUserNotFound: 'इस नाम का कोई उपयोगकर्ता नहीं मिला — नाम जांचें या नया खाता बनाएं।',
+      loginErrorWrongPassword: 'पासवर्ड ग़लत है।',
+      loginErrorNetwork: 'कनेक्ट नहीं हो सका — इंटरनेट जांचें और फिर से कोशिश करें।',
+      loginErrorTooManyRequests: 'बहुत ज़्यादा कोशिशें — बाद में फिर आज़माएं।',
+      loginErrorGeneric: 'एक अनपेक्षित त्रुटि हुई — फिर से कोशिश करें।',
+      knownUsersEmpty: 'अभी तक कोई खाता दर्ज नहीं है — नीचे पहला खाता बनाएं।',
       smokerMarkSuffix: ' · शीशा पीता है',
       needsSectionTitle: 'ज़रूरी सामान',
       needsLede: 'पैसों की बात करने से पहले वह सब कुछ दर्ज करें जो साथ लाना है, फिर हर सामान के कार्ड को उस व्यक्ति के कॉलम में खींच कर ले जाएं जो उसे लाएगा — इस तरह सबको पता चलेगा कि कौन क्या लाएगा।',
@@ -1389,11 +1515,6 @@
       itemDescPlaceholder: 'उदाहरण: हवाई टिकट',
       itemShishaLabel: 'शीशा',
       removeItemRowAria: 'यह वस्तु हटाएं',
-      registerPromptPrefix: 'दर्ज:',
-      registerPromptSuffix: '— क्या यह शीशा पीता है?',
-      rpYes: 'हां, पीता है',
-      rpNo: 'नहीं',
-      smokerRegisteredBadge: 'शीशा पीने वाला (दर्ज)',
       resultsSectionTitle: 'सारांश',
       totalLabel: 'कुल सामान्य ख़र्च',
       shareLabel: 'सामान्य ख़र्च में हर व्यक्ति का हिस्सा',
@@ -1403,7 +1524,7 @@
       settleSectionTitle: 'अंतिम निपटान',
       settleNote: 'सबका हिसाब बराबर करने के लिए कम से कम लेन-देन।',
       resetBtnLabel: 'नई यात्रा शुरू करें',
-      footerNote: 'सभी हिसाब और दर्ज उपयोगकर्ता नाम पूरी तरह आपके ब्राउज़र में सहेजे जाते हैं — कोई डेटा किसी सर्वर पर नहीं भेजा जाता।',
+      footerNote: 'उपयोगकर्ता नाम और पासवर्ड Firebase डेटाबेस में सुरक्षित रूप से सहेजे जाते हैं — यात्रा और ख़र्च का विवरण आपके ब्राउज़र में ही रहता है और किसी सर्वर पर नहीं भेजा जाता।',
       pillEven: 'बराबर',
       pillCredit: 'अतिरिक्त +{amount}',
       pillDebit: 'कमी −{amount}',
@@ -1469,44 +1590,74 @@
     if (!results.hidden) calculate(true);
   }
 
-  // ---- Local username "directory" (this device only, no password, no server) ----
-  const USERS_KEY = 'tripLedgerUsers';
+  // ---- Firebase: مصادقة حقيقية (Auth) + دليل مستخدمين مشترك (Firestore) ----
+  function normalizeUsername(name) {
+    return name.trim().toLowerCase();
+  }
 
-  function loadUsers() {
+  function makeSyntheticEmail() {
+    // اسم المستخدم وحده لا يصلح كعنوان بريد صالح لكل الحالات (عربي/هندي)، فنولّد بريدًا داخليًا فريدًا
+    // يربط حساب Firebase Auth باسم المستخدم عبر مستند في مجموعة usernames — النطاق .invalid محجوز فعليًا لهذا الغرض (RFC 2606) ولا يمكن أن يصل إليه بريد حقيقي.
+    return `u${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}@atsh-users.invalid`;
+  }
+
+  async function fbRegister(username, password, smoker) {
+    const trimmed = username.trim();
+    const normalized = normalizeUsername(trimmed);
+    if (!normalized) { const err = new Error('empty-username'); err.code = 'empty-username'; throw err; }
+    const takenSnap = await getDoc(doc(db, 'usernames', normalized));
+    if (takenSnap.exists()) { const err = new Error('username-taken'); err.code = 'username-taken'; throw err; }
+    const email = makeSyntheticEmail();
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, 'usernames', normalized), { uid: cred.user.uid, email });
+    await setDoc(doc(db, 'users', cred.user.uid), { username: trimmed, smoker: !!smoker });
+    return { uid: cred.user.uid, username: trimmed, smoker: !!smoker };
+  }
+
+  async function fbLogin(username, password) {
+    const normalized = normalizeUsername(username);
+    const mapSnap = await getDoc(doc(db, 'usernames', normalized));
+    if (!mapSnap.exists()) { const err = new Error('user-not-found'); err.code = 'user-not-found'; throw err; }
+    const cred = await signInWithEmailAndPassword(auth, mapSnap.data().email, password);
+    const profSnap = await getDoc(doc(db, 'users', cred.user.uid));
+    const profile = profSnap.exists() ? profSnap.data() : { username: username.trim(), smoker: false };
+    return { uid: cred.user.uid, username: profile.username, smoker: !!profile.smoker };
+  }
+
+  async function fetchAllUsers() {
+    const snap = await getDocs(collection(db, 'users'));
+    const list = [];
+    snap.forEach((d) => list.push(d.data()));
+    list.sort((a, b) => a.username.localeCompare(b.username, 'ar'));
+    return list;
+  }
+
+  function authErrorMessage(err) {
+    const code = (err && err.code) || '';
+    const map = {
+      'empty-username': 'loginErrorEmptyName',
+      'username-taken': 'loginErrorUsernameTaken',
+      'auth/email-already-in-use': 'loginErrorUsernameTaken',
+      'user-not-found': 'loginErrorUserNotFound',
+      'auth/wrong-password': 'loginErrorWrongPassword',
+      'auth/invalid-credential': 'loginErrorWrongPassword',
+      'auth/weak-password': 'loginErrorWeakPassword',
+      'auth/network-request-failed': 'loginErrorNetwork',
+      'auth/too-many-requests': 'loginErrorTooManyRequests',
+    };
+    return T(map[code] || 'loginErrorGeneric');
+  }
+
+  async function refreshUserUI() {
+    let users = [];
     try {
-      const raw = localStorage.getItem(USERS_KEY);
-      const list = raw ? JSON.parse(raw) : [];
-      // يحوّل أي بيانات محفوظة بصيغة قديمة (اسم نصي فقط) إلى الصيغة الحالية {name, smoker}
-      return list.map(u => (typeof u === 'string' ? { name: u, smoker: false } : u));
+      users = await fetchAllUsers();
     } catch (e) {
-      return [];
+      users = [];
     }
-  }
-
-  function saveUsers(list) {
-    try { localStorage.setItem(USERS_KEY, JSON.stringify(list)); } catch (e) { /* storage unavailable */ }
-  }
-
-  function registerUser(name, smoker) {
-    const trimmed = name.trim();
-    if (!trimmed) return null;
-    const users = loadUsers();
-    const existing = users.find(u => u.name.toLowerCase() === trimmed.toLowerCase());
-    if (existing) {
-      if (typeof smoker === 'boolean') existing.smoker = smoker;
-      saveUsers(users);
-      return existing.name;
-    }
-    users.push({ name: trimmed, smoker: !!smoker });
-    saveUsers(users);
-    return trimmed;
-  }
-
-  function refreshUserUI() {
-    const users = loadUsers();
-    usersDatalist.innerHTML = users.map(u => `<option value="${escapeHtml(u.name)}"></option>`).join('');
+    usersDatalist.innerHTML = users.map(u => `<option value="${escapeHtml(u.username)}"></option>`).join('');
     knownUsersList.innerHTML = users.length
-      ? users.map(u => `<button type="button" class="user-chip" data-username="${escapeHtml(u.name)}" data-smoker="${u.smoker ? 1 : 0}">${escapeHtml(u.name)}${u.smoker ? ` <span class="chip-smoker-mark">${escapeHtml(T('smokerMarkSuffix'))}</span>` : ''}</button>`).join('')
+      ? users.map(u => `<button type="button" class="user-chip" data-username="${escapeHtml(u.username)}">${escapeHtml(u.username)}${u.smoker ? ` <span class="chip-smoker-mark">${escapeHtml(T('smokerMarkSuffix'))}</span>` : ''}</button>`).join('')
       : `<p class="known-users-empty">${escapeHtml(T('knownUsersEmpty'))}</p>`;
   }
 
@@ -1585,54 +1736,6 @@
     return row;
   }
 
-  function findUser(name) {
-    const trimmed = name.trim();
-    if (!trimmed) return null;
-    return loadUsers().find(u => u.name.toLowerCase() === trimmed.toLowerCase()) || null;
-  }
-
-  function renderAccountStatus(card) {
-    const status = card.querySelector('.account-status');
-    const name = card.querySelector('.account-name').value.trim();
-    const key = name.toLowerCase();
-    if (!name) {
-      status.innerHTML = '';
-      card.dataset.smoker = '0';
-      card.dataset.resolvedName = '';
-      return;
-    }
-    // لا يُعاد طرح السؤال لنفس الاسم إن كان قد أُجيب عنه ضمن هذه الجلسة (يحمي من إعادة السؤال إذا تعذّر حفظ التسجيل)
-    if (card.dataset.resolvedName === key) return;
-    card.dataset.resolvedName = key;
-    const user = findUser(name);
-    if (user) {
-      card.dataset.smoker = user.smoker ? '1' : '0';
-      status.innerHTML = user.smoker ? `<span class="badge-smoker" data-i18n="smokerRegisteredBadge">${escapeHtml(T('smokerRegisteredBadge'))}</span>` : '';
-    } else {
-      // اسم جديد لم يُسجَّل بعد على هذا الجهاز — نسأل عن صفة الشيشة الآن، عند تسجيله، لا لاحقًا عند إضافة مصروفاته
-      status.innerHTML = `
-        <div class="register-prompt">
-          <span><span data-i18n="registerPromptPrefix">${escapeHtml(T('registerPromptPrefix'))}</span> "<strong>${escapeHtml(name)}</strong>" <span data-i18n="registerPromptSuffix">${escapeHtml(T('registerPromptSuffix'))}</span></span>
-          <button type="button" class="rp-yes" data-i18n="rpYes">${escapeHtml(T('rpYes'))}</button>
-          <button type="button" class="rp-no" data-i18n="rpNo">${escapeHtml(T('rpNo'))}</button>
-        </div>
-      `;
-      status.querySelector('.rp-yes').addEventListener('click', () => {
-        registerUser(name, true);
-        refreshUserUI();
-        // نطبّق الاختيار مباشرة بدل إعادة القراءة من التخزين، لأن بعض المتصفحات (وضع التصفح الخاص مثلًا) قد تمنع الحفظ فعليًا
-        card.dataset.smoker = '1';
-        status.innerHTML = `<span class="badge-smoker" data-i18n="smokerRegisteredBadge">${escapeHtml(T('smokerRegisteredBadge'))}</span>`;
-      });
-      status.querySelector('.rp-no').addEventListener('click', () => {
-        registerUser(name, false);
-        refreshUserUI();
-        card.dataset.smoker = '0';
-        status.innerHTML = '';
-      });
-    }
-  }
-
   function addAccount(name = '', knownSmoker = null) {
     const card = document.createElement('div');
     card.className = 'account-card';
@@ -1644,13 +1747,16 @@
           <label data-i18n="nameFieldLabel">${escapeHtml(T('nameFieldLabel'))}</label>
           <input type="text" class="account-name" list="knownUsersDatalist" data-i18n-placeholder="accountNamePlaceholder" placeholder="${escapeHtml(T('accountNamePlaceholder'))}" value="${name}">
         </div>
+        <label class="smoker-chip account-smoker-chip${knownSmoker ? ' active' : ''}">
+          <input type="checkbox" class="account-smoker" ${knownSmoker ? 'checked' : ''}>
+          <span data-i18n="smokerChipLabel">${escapeHtml(T('smokerChipLabel'))}</span>
+        </label>
         <div class="acct-subtotal">
           <div class="label" data-i18n="subtotalLabel">${escapeHtml(T('subtotalLabel'))}</div>
           <div class="value num">0.00</div>
         </div>
         <button type="button" class="row-remove account-remove" data-i18n-aria-label="removeAccountAria" aria-label="${escapeHtml(T('removeAccountAria'))}">×</button>
       </div>
-      <div class="account-status"></div>
       <div class="items-list"></div>
       <button type="button" class="add-item-btn" data-i18n="addItemBtn">${escapeHtml(T('addItemBtn'))}</button>
     `;
@@ -1666,17 +1772,14 @@
     card.querySelector('.items-list').addEventListener('input', (e) => {
       if (e.target.classList.contains('item-price')) updateSubtotal(card);
     });
-    card.querySelector('.account-name').addEventListener('change', () => renderAccountStatus(card));
+    const smokerChip = card.querySelector('.account-smoker-chip');
+    card.querySelector('.account-smoker').addEventListener('change', (e) => {
+      card.dataset.smoker = e.target.checked ? '1' : '0';
+      smokerChip.classList.toggle('active', e.target.checked);
+    });
     listEl.appendChild(card);
     addItem(card);
     renumber();
-    if (knownSmoker !== null) {
-      // الاسم مسجَّل مسبقًا وصفة الشيشة معروفة من تسجيل الدخول — لا حاجة لسؤاله مجددًا هنا
-      card.dataset.resolvedName = name.trim().toLowerCase();
-      card.querySelector('.account-status').innerHTML = knownSmoker ? `<span class="badge-smoker" data-i18n="smokerRegisteredBadge">${escapeHtml(T('smokerRegisteredBadge'))}</span>` : '';
-    } else if (name.trim()) {
-      renderAccountStatus(card);
-    }
     return card;
   }
 
@@ -1977,16 +2080,38 @@
     startTripBtn.focus();
   }
 
+  function renderAuthPanel() {
+    const signedIn = !!(firebaseUser && cachedProfile);
+    alreadySignedIn.hidden = !signedIn;
+    authArea.hidden = signedIn;
+    if (signedIn) alreadySignedInName.textContent = cachedProfile.username;
+  }
+
+  function setAuthMode(mode) {
+    authMode = mode === 'register' ? 'register' : 'signin';
+    authModeSwitch.querySelectorAll('button').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.mode === authMode);
+    });
+    const isRegister = authMode === 'register';
+    authConfirmField.hidden = !isRegister;
+    newUserSmokerChip.hidden = !isRegister;
+    authSubmitBtn.dataset.i18n = isRegister ? 'authSubmitRegister' : 'authSubmitSignIn';
+    authSubmitBtn.textContent = T(authSubmitBtn.dataset.i18n);
+    loginError.textContent = '';
+  }
+
   function showLogin() {
     introCard.hidden = true;
     loginError.textContent = '';
-    newUsernameInput.value = '';
-    newUserSmoker.checked = false;
+    authForm.reset();
     newUserSmokerChip.classList.remove('active');
+    authSubmitBtn.disabled = false;
+    setAuthMode('signin');
+    renderAuthPanel();
     refreshUserUI();
     loginCard.hidden = false;
     window.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' });
-    newUsernameInput.focus();
+    if (!alreadySignedIn.hidden) continueSessionBtn.focus(); else authUsernameInput.focus();
   }
 
   function loginAs(username, smoker) {
@@ -2000,29 +2125,77 @@
   knownUsersList.addEventListener('click', (e) => {
     const btn = e.target.closest('.user-chip');
     if (!btn) return;
-    loginAs(btn.dataset.username, btn.dataset.smoker === '1');
+    setAuthMode('signin');
+    authUsernameInput.value = btn.dataset.username;
+    authPasswordInput.focus();
   });
 
   newUserSmoker.addEventListener('change', (e) => {
     newUserSmokerChip.classList.toggle('active', e.target.checked);
   });
 
-  registerBtn.addEventListener('click', () => {
-    const name = newUsernameInput.value.trim();
-    if (!name) {
-      loginError.textContent = T('loginErrorEmptyName');
-      return;
-    }
-    loginError.textContent = '';
-    const smoker = newUserSmoker.checked;
-    loginAs(registerUser(name, smoker), smoker);
+  authModeSwitch.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-mode]');
+    if (!btn) return;
+    setAuthMode(btn.dataset.mode);
   });
 
-  newUsernameInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      registerBtn.click();
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.textContent = '';
+    const username = authUsernameInput.value.trim();
+    const password = authPasswordInput.value;
+    if (!username) { loginError.textContent = T('loginErrorEmptyName'); return; }
+    if (!password) { loginError.textContent = T('loginErrorEmptyPassword'); return; }
+    if (authMode === 'register') {
+      if (password.length < 6) { loginError.textContent = T('loginErrorWeakPassword'); return; }
+      if (password !== authConfirmPasswordInput.value) { loginError.textContent = T('loginErrorPasswordMismatch'); return; }
     }
+    const originalLabel = authSubmitBtn.textContent;
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.textContent = T('authSubmitLoading');
+    try {
+      const result = authMode === 'register'
+        ? await fbRegister(username, password, newUserSmoker.checked)
+        : await fbLogin(username, password);
+      loginAs(result.username, result.smoker);
+    } catch (err) {
+      loginError.textContent = authErrorMessage(err);
+      authSubmitBtn.disabled = false;
+      authSubmitBtn.textContent = originalLabel;
+    }
+  });
+
+  continueSessionBtn.addEventListener('click', () => {
+    if (!cachedProfile) return;
+    loginAs(cachedProfile.username, cachedProfile.smoker);
+  });
+
+  switchAccountBtn.addEventListener('click', async () => {
+    try { await signOut(auth); } catch (e) { /* ignore */ }
+    renderAuthPanel();
+    authUsernameInput.focus();
+  });
+
+  signOutLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try { await signOut(auth); } catch (e2) { /* ignore */ }
+    showIntro();
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    firebaseUser = user;
+    if (user) {
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        cachedProfile = snap.exists() ? snap.data() : { username: user.email, smoker: false };
+      } catch (e) {
+        cachedProfile = null;
+      }
+    } else {
+      cachedProfile = null;
+    }
+    renderAuthPanel();
   });
 
   addAccountBtn.addEventListener('click', () => {
@@ -2054,8 +2227,6 @@
   function calculate(skipScroll) {
     errorMsg.textContent = '';
     const cards = [...listEl.querySelectorAll('.account-card')];
-    // يتأكد أن حالة تسجيل كل شخص (اسمه وصفة الشيشة) محدَّثة قبل قراءتها، حتى لو لم يخرج الحقل من التركيز بعد
-    cards.forEach(renderAccountStatus);
     const people = cards.map((card, idx) => {
       const nameInput = card.querySelector('.account-name');
       const name = nameInput.value.trim() || T('personFallback', { n: idx + 1 });
